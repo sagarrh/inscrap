@@ -16,11 +16,8 @@ def fetch_user_posts(username):
 def download_instagram_posts(username, json_filename, folder_name):
     try:
         posts = fetch_user_posts(username)
-
-        # Create a list to store post data
         post_data = []
 
-        # Iterate over each post
         for post in posts:
             # Download the post image
             image_filename = f"{post.mediaid}.jpg"
@@ -35,20 +32,17 @@ def download_instagram_posts(username, json_filename, folder_name):
                 L.download_post(post, target=folder_name)
                 print(f"Downloaded post {post.mediaid} as {image_filename}")
 
-                postdate_str = post.date_utc.strftime('%Y-%m-%d_%H-%M-%S_UTC')
-                new_image_filename = f"{postdate_str}.jpg"
-                new_image_filepath = os.path.join(, new_image_filename)
-
-                # Rename the downloaded image file to include postdate
-                os.rename(image_filepath, new_image_filepath)
-                print(f"Renamed image file to {new_image_filename}")
                 # Prepare post metadata
+                base_folder_path = os.path.dirname(image_filepath)
+                new_file_path = os.path.join(base_folder_path, f"{post.date_utc.strftime('%Y-%m-%d_%H-%M-%S')}_UTC.jpg")
+                
                 post_metadata = {
                     'likes': post.likes,
                     'comments': post.comments,
                     'postdate': post.date_utc.strftime('%Y-%m-%d %H:%M:%S'),
                     'caption': post.caption,
-                    'filepathofimg': new_image_filepath
+                    'filepathofimg': image_filepath,
+                    'newfilepath': new_file_path  # New attribute
                 }
 
                 # Append post metadata to list
@@ -61,7 +55,7 @@ def download_instagram_posts(username, json_filename, folder_name):
         json_path = os.path.abspath(json_filename)
         with open(json_path, 'w', encoding='utf-8') as json_file:
             json.dump(post_data, json_file, ensure_ascii=False, indent=4)
-            print(f"Saved metadata of {len(post_data)} posts to {json_path}")
+        print(f"Saved metadata of {len(post_data)} posts to {json_path}")
 
     except Exception as e:
         print(f"Error fetching or processing posts: {e}")
@@ -73,7 +67,8 @@ def main():
     folder_name = input("Enter folder name to save posts (will be created if not exist): ")
 
     try:
-        download_instagram_posts(username, json_filename,folder_name)
+        download_instagram_posts(username, json_filename, folder_name)
+
     except Exception as e:
         print(f"Error: {e}")
 
