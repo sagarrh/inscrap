@@ -2,18 +2,17 @@ import os
 import json
 import cv2
 import shutil
+import sys
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
 
-# Function to load JSON data from file
 def load_json(filename):
     with open(filename, 'r', encoding='utf-8') as file:
         data = json.load(file)
     return data
 
-# Function to perform image analysis using OpenCV
 def analyze_image(image_path):
     try:
         print(f"Attempting to read image at: {image_path}")
@@ -22,7 +21,6 @@ def analyze_image(image_path):
             raise ValueError(f"Failed to read image at {image_path}.")
         
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        # Example: Face detection using Haar cascades
         face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
         faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5, minSize=(30, 30))
 
@@ -35,7 +33,6 @@ def analyze_image(image_path):
         print(f"Error analyzing image {image_path}: {e}")
         return []
 
-# Function to perform caption analysis using NLTK for keyword extraction
 def analyze_caption(caption):
     try:
         # Tokenize caption into words
@@ -102,7 +99,6 @@ def categorize_posts(posts):
         # Combine keywords from image and caption analysis
         combined_keywords = set(image_keywords + caption_keywords)
         
-        # Ensure a post goes to only one subfolder (category)
         assigned_category = None
         for keyword in combined_keywords:
             if keyword in categorized_posts:
@@ -137,10 +133,8 @@ def create_folders(base_folder, categories):
     except Exception as e:
         print(f"Error creating folders: {e}")
 
-# Function to save posts into category folders
 def save_categorized_posts(categorized_posts, base_folder):
     try:
-        # Iterate over each category and save posts
         for category, posts in categorized_posts.items():
             category_folder = os.path.join(base_folder, category)
             for post in posts:
@@ -154,29 +148,19 @@ def save_categorized_posts(categorized_posts, base_folder):
     except Exception as e:
         print(f"Error saving categorized posts: {e}")
 
-# Main function
 def main():
-    json_filename = input("Enter JSON filename containing post metadata: ")
-    folder_name = input("Enter folder name to save categorized posts: ")
+    if len(sys.argv) != 3:
+        print("Usage: python generator.py <json_filename> <folder_name>")
+        return
+
+    json_filename = sys.argv[1]
+    folder_name = sys.argv[2]
 
     try:
-        # Load JSON data
         posts = load_json(json_filename)
-
-        # Categorize posts based on image and caption analysis
         categorized_posts = categorize_posts(posts)
-
-        # Get unique categories
-        categories = categorized_posts.keys()
-
-        # Create main folder and category subfolders
-        create_folders(folder_name, categories)
-
-        # Save categorized posts into category folders
+        create_folders(folder_name, categorized_posts.keys())
         save_categorized_posts(categorized_posts, folder_name)
-
-        print("Posts have been categorized and saved successfully.")
-
     except Exception as e:
         print(f"Error: {e}")
 

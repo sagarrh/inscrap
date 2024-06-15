@@ -1,6 +1,7 @@
 import os
 import instaloader
 import json
+import sys
 from datetime import datetime
 
 # Initialize Instaloader
@@ -62,13 +63,16 @@ def download_instagram_posts(username, json_filename, folder_name):
 
 # Main function
 def main():
-    username = input("Enter Instagram username: ")
-    json_filename = input("Enter filename to save post metadata (e.g., 'user_posts.json'): ")
-    folder_name = input("Enter folder name to save posts (will be created if not exist): ")
+    if len(sys.argv) != 4:
+        print("Usage: python insta.py <username> <json_filename> <folder_name>")
+        return
+
+    username = sys.argv[1]
+    json_filename = sys.argv[2]
+    folder_name = sys.argv[3]
 
     try:
         download_instagram_posts(username, json_filename, folder_name)
-
     except Exception as e:
         print(f"Error: {e}")
 
