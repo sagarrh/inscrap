@@ -35,13 +35,20 @@ def download_instagram_posts(username, json_filename, folder_name):
                 L.download_post(post, target=folder_name)
                 print(f"Downloaded post {post.mediaid} as {image_filename}")
 
+                postdate_str = post.date_utc.strftime('%Y-%m-%d_%H-%M-%S_UTC')
+                new_image_filename = f"{postdate_str}.jpg"
+                new_image_filepath = os.path.join(, new_image_filename)
+
+                # Rename the downloaded image file to include postdate
+                os.rename(image_filepath, new_image_filepath)
+                print(f"Renamed image file to {new_image_filename}")
                 # Prepare post metadata
                 post_metadata = {
                     'likes': post.likes,
                     'comments': post.comments,
                     'postdate': post.date_utc.strftime('%Y-%m-%d %H:%M:%S'),
                     'caption': post.caption,
-                    'filepathofimg': image_filepath
+                    'filepathofimg': new_image_filepath
                 }
 
                 # Append post metadata to list
@@ -66,7 +73,7 @@ def main():
     folder_name = input("Enter folder name to save posts (will be created if not exist): ")
 
     try:
-        download_instagram_posts(username, json_filename, folder_name)
+        download_instagram_posts(username, json_filename,folder_name)
     except Exception as e:
         print(f"Error: {e}")
 
